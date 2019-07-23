@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container">
+  <div id="app" class="container my-5">
     <div class="row">
       <div class="col-12">
         {% if user.is_authenticated %}
@@ -35,21 +35,79 @@
         delimiters: ['[[', ']]'],
         data: {
           bookmarks: [],
-          newBookmark: {}
-          currentBookmark: {
-            'title': null,
-            'description': null,
-            'url': null,
-            'favicon': null
+          newBookmark: {
+            'url': null
           },
+          currentBookmark: {},
           loading: false,
           message: null
         },
         mounted: function() {
-
+          this.getBookmarks();
         },
         methods: {
-
+          getBookmarks: function() {
+            this.loading = true;
+            axios.get('/api/bookmark/')
+              .then((response) => {
+                this.loading = false;
+                this.bookmarks = response.data;
+              })
+              .catch((error) => {
+                this.loading = false;
+                console.log(error);
+              })
+          },
+          getBookmark: function(id) {
+            this.loading = true;
+            axios.get(`/api/bookmark/${id}`)
+              .then((response) => {
+                this.loading = false;
+                this.currentBookmark = response.data;
+              })
+              .catch((error) => {
+                this.loading = false;
+                console.log(error);
+              })
+          },
+          addBookmark: function() {
+            this.loading = true;
+            axios.post('/api/bookmark', this.newBookmark)
+              .then((response) => {
+                this.loading = false;
+                this.getBookmarks();
+              })
+              .catch((error) => {
+                this.loading = false;
+                console.log(error);
+              })
+          },
+          updateBookmark: function() {
+            this.loading = true;
+            axios.put(`/api/bookmark/${this.currentBookmark.id}`,
+              this.currentBookmark)
+              .then((response) => {
+                this.loading = false;
+                this.currentBookmark = response.data;
+                this.getBookmarks();
+              })
+              .catch((error) => {
+                this.loading = false;
+                console.log(error);
+              })
+          },
+          deleteBookmark: function(id) {
+            this.loading = true;
+            axios.delete(`/api/bookmark/${id}`)
+              .then((response) => {
+                this.loading = false;
+                this.getBookmarks();
+              })
+              .catch((error) => {
+                this.loading = false;
+                console.log(error);
+              })
+          }
         }
       });
     </script>
