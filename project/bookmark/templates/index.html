@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        {% if user.is_authenticated %}
+          <h1>Добро пожаловать, {{ user.first_name }}</h1>
+          <h4 class="mb-3">Ваши загладки</h4>
+          <div v-for="bookmark in bookmarks" class="card mb-2">
+            <div class="card-body">
+              <h5 class="card-title">[[ bookmark.title ]]</h5>
+              <h6 class="card-subtitle mb-2 text-muted">[[ bookmark.url ]]</h6>
+              <p class="card-text">[[ bookmark.description ]]</p>
+              <a href="#" class="card-link">Перейти</a>
+              <a href="#" class="card-link">Редактировать</a>
+              <a href="#" class="card-link">Удалить</a>
+            </div>
+          </div>
+        {% else %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {% if user.is_authenticated %}
+    <script type="text/javascript">
+      axios.defaults.xsrfCookieName = 'csrftoken';
+      axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+
+      new Vue({
+        el: '#app',
+        delimiters: ['[[', ']]'],
+        data: {
+          bookmarks: [],
+          newBookmark: {}
+          currentBookmark: {
+            'title': null,
+            'description': null,
+            'url': null,
+            'favicon': null
+          },
+          loading: false,
+          message: null
+        },
+        mounted: function() {
+
+        },
+        methods: {
+
+        }
+      });
+    </script>
+  {% endif %}
+{% endblock %}
