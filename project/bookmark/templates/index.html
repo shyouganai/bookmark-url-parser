@@ -6,15 +6,60 @@
       <div class="col-12">
         {% if user.is_authenticated %}
           <h1>Добро пожаловать, {{ user.first_name }}</h1>
-          <h4 class="mb-3">Ваши загладки</h4>
+          <form v-on:submit.prevent="addBookmark()">
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="URL" v-model="newBookmark.url">
+              <div class="input-group-append">
+                <button class="btn btn-outline-success" type="submit">Добавить</button>
+              </div>
+            </div>
+          </form>
+          <h4 class="mb-3">Ваши закладки</h4>
           <div v-for="bookmark in bookmarks" class="card mb-2">
             <div class="card-body">
-              <h5 class="card-title">[[ bookmark.title ]]</h5>
+              <h5 class="card-title"><img class="mr-1" v-bind:src="[[ bookmark.favicon ]]" alt="" style="max-width: 16px;margin-top: -3px"> [[ bookmark.title ]]</h5>
               <h6 class="card-subtitle mb-2 text-muted">[[ bookmark.url ]]</h6>
               <p class="card-text">[[ bookmark.description ]]</p>
-              <a href="#" class="card-link">Перейти</a>
-              <a href="#" class="card-link">Редактировать</a>
-              <a href="#" class="card-link">Удалить</a>
+              <a class="btn btn-success btn-sm mr-1" v-bind:href="[[ bookmark.url ]]" target="_blank">Перейти</a>
+              <button class="btn btn-secondary btn-sm mr-1" v-on:click="getBookmark(bookmark.id)">Редактировать</button>
+              <button class="btn btn-danger btn-sm" v-on:click="deleteBookmark(bookmark.id)">Удалить</button>
+            </div>
+          </div>
+
+          <!-- Modal -->
+          <div class="modal fade" id="editBookmarkModal" tabindex="-1" role="dialog" aria-labelledby="editBookmarkModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <form v-on:submit.prevent="updateBookmark()">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Редактирование</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="id_title" class="col-form-label">Загаловок:</label>
+                      <input type="text" class="form-control" id="id_title" v-model="currentBookmark.title">
+                    </div>
+                    <div class="form-group">
+                      <label for="id_description" class="col-form-label">Описание:</label>
+                      <textarea class="form-control" id="id_description" v-model="currentBookmark.description"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="id_url" class="col-form-label">Ссылка:</label>
+                      <input type="text" class="form-control" id="id_url" v-model="currentBookmark.url">
+                    </div>
+                    <div class="form-group">
+                      <label for="id_favicon" class="col-form-label">Ссылка на иконку:</label>
+                      <input type="text" class="form-control" id="id_favicon" v-model="currentBookmark.favicon">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         {% else %}
@@ -35,9 +80,7 @@
         delimiters: ['[[', ']]'],
         data: {
           bookmarks: [],
-          newBookmark: {
-            'url': null
-          },
+          newBookmark: { 'url': '' },
           currentBookmark: {},
           loading: false,
           message: null
@@ -64,6 +107,7 @@
               .then((response) => {
                 this.loading = false;
                 this.currentBookmark = response.data;
+                $('#editBookmarkModal').modal('show');
               })
               .catch((error) => {
                 this.loading = false;
@@ -72,9 +116,10 @@
           },
           addBookmark: function() {
             this.loading = true;
-            axios.post('/api/bookmark', this.newBookmark)
+            axios.post('/api/bookmark/', this.newBookmark)
               .then((response) => {
                 this.loading = false;
+                this.newBookmark.url = '';
                 this.getBookmarks();
               })
               .catch((error) => {
@@ -84,11 +129,12 @@
           },
           updateBookmark: function() {
             this.loading = true;
-            axios.put(`/api/bookmark/${this.currentBookmark.id}`,
+            axios.put(`/api/bookmark/${this.currentBookmark.id}/`,
               this.currentBookmark)
               .then((response) => {
                 this.loading = false;
                 this.currentBookmark = response.data;
+                $('#editBookmarkModal').modal('hide');
                 this.getBookmarks();
               })
               .catch((error) => {
