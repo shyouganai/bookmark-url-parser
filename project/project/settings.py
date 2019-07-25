@@ -26,7 +26,9 @@ SECRET_KEY = 'ifq)j-&f(6bafa$7-)k=$ez682h!el(#fxk*eth=fbw-=w8@42'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'bookmark-url-parser.herokuapp.com',
+]
 
 
 # Application definition
