@@ -27,6 +27,7 @@ SECRET_KEY = 'ifq)j-&f(6bafa$7-)k=$ez682h!el(#fxk*eth=fbw-=w8@42'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     'bookmark-url-parser.herokuapp.com',
 ]
 

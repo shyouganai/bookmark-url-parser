@@ -13,11 +13,11 @@ class BookmarkSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 
 	def validate(self, data):
-		if Bookmark.objects.filter(user=self.context['request'].user).filter(url__iexact=data['url']):
-			raise serializers.ValidationError('This link is exists')
 		return data
 
 	def create(self, validated_data):
+		if Bookmark.objects.filter(user=self.context['request'].user).filter(url__iexact=validated_data['url']):
+			raise serializers.ValidationError('This link is exists')
 		try:
 			soup = BeautifulSoup(requests.get(validated_data['url']).text, 'html.parser')
 		except ConnectionError as e:
