@@ -20,11 +20,11 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav ml-auto">
         {% if user.is_authenticated %}
-          <a class="nav-item nav-link" href="#">Выйти</a>
+          <a class="nav-item nav-link" href="/accounts/logout">Выйти</a>
         {% else %}
-          <a class="nav-item nav-link" href="#">Регистрация</a>
+          <a class="nav-item nav-link" href="{% url 'registration' %}">Регистрация</a>
           <a class="nav-item nav-link disabled" href="#">или</a>
-          <a class="nav-item nav-link" href="#">Вход</a>
+          <a class="nav-item nav-link" href="{% url 'login' %}">Вход</a>
         {% endif %}
       </div>
     </div>

@@ -1,4 +1,7 @@
 import requests
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework import serializers
 from bs4 import BeautifulSoup
 
@@ -10,10 +13,15 @@ class BookmarkSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 
 	def validate(self, data):
+		if Bookmark.objects.filter(user=self.context['request'].user).filter(url__iexact=data['url']):
+			raise serializers.ValidationError('This link is exists')
 		return data
 
 	def create(self, validated_data):
-		soup = BeautifulSoup(requests.get(validated_data['url']).text, 'html.parser')
+		try:
+			soup = BeautifulSoup(requests.get(validated_data['url']).text, 'html.parser')
+		except ConnectionError as e:
+			pass
 
 		# Title
 		title = soup.title.string
@@ -30,14 +38,18 @@ class BookmarkSerializer(serializers.ModelSerializer):
 		url = validated_data['url']
 
 		# Favicon
-		favicon = str(soup.find('link', rel='icon')['href'])
-
-		if favicon.startswith('/'):
-			url_s = url.split('/')
-			if len(url_s) > 2:
-				favicon = url_s[0]+url_s[1]+url_s[2] + favicon
-			else:
-				favicon = url + favicon
+		favicon = ''
+		try:
+			favicon = str(soup.find('link', rel='icon')['href'])
+			if not favicon.startswith(url[:4]):
+				if '.' not in favicon.split('/')[2]:
+					url_s = url.split('/')
+					if len(url_s) > 2:
+						favicon = url_s[0]+url_s[1]+url_s[2] + favicon
+					else:
+						favicon = url + favicon
+		except TypeError as error:
+			pass
 				
 		# Create Bookmark
 		bookmark = Bookmark(

@@ -13,6 +13,7 @@
                 <button class="btn btn-outline-success" type="submit">Добавить</button>
               </div>
             </div>
+            <p>[[ message ]]</p>
           </form>
           <h4 class="mb-3">Ваши закладки</h4>
           <div v-for="bookmark in bookmarks" class="card mb-2">
@@ -20,9 +21,11 @@
               <h5 class="card-title"><img class="mr-1" v-bind:src="[[ bookmark.favicon ]]" alt="" style="max-width: 16px;margin-top: -3px"> [[ bookmark.title ]]</h5>
               <h6 class="card-subtitle mb-2 text-muted">[[ bookmark.url ]]</h6>
               <p class="card-text">[[ bookmark.description ]]</p>
-              <a class="btn btn-success btn-sm mr-1" v-bind:href="[[ bookmark.url ]]" target="_blank">Перейти</a>
-              <button class="btn btn-secondary btn-sm mr-1" v-on:click="getBookmark(bookmark.id)">Редактировать</button>
-              <button class="btn btn-danger btn-sm" v-on:click="deleteBookmark(bookmark.id)">Удалить</button>
+            </div>
+            <div class="card-footer">
+              <a class="btn btn-outline-success btn-sm mr-1" v-bind:href="[[ bookmark.url ]]" target="_blank">Перейти</a>
+              <button class="btn btn-outline-secondary btn-sm mr-1" v-on:click="getBookmark(bookmark.id)">Редактировать</button>
+              <button class="btn btn-outline-danger btn-sm" v-on:click="deleteBookmark(bookmark.id)">Удалить</button>
             </div>
           </div>
 
@@ -63,6 +66,10 @@
             </div>
           </div>
         {% else %}
+          <div class="container my-5">
+            <h1>Bookmark</h1>
+            <h3><a class="nav-link" href="{% url 'registration' %}">Зарегистрируйтесь</a><a class="nav-link" href="{% url 'login' %}">Войдите</a></h3>
+          </div>
         {% endif %}
       </div>
     </div>
@@ -116,16 +123,30 @@
           },
           addBookmark: function() {
             this.loading = true;
-            axios.post('/api/bookmark/', this.newBookmark)
-              .then((response) => {
-                this.loading = false;
-                this.newBookmark.url = '';
-                this.getBookmarks();
-              })
-              .catch((error) => {
-                this.loading = false;
-                console.log(error);
-              })
+            this.message = 'Обработка...';
+            this.newBookmark.url = this.newBookmark.url.toLowerCase();
+            if (!this.newBookmark.url.startsWith('http')) {
+              this.newBookmark.url = 'https://'+this.newBookmark.url;
+            }
+            const exp = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
+            const rgx = new RegExp(exp);
+            if (!this.newBookmark.url.match(rgx)) {
+              this.message = 'Введите пожалуйста правильную ссылку';
+            } else {
+              axios.post('/api/bookmark/', this.newBookmark)
+                .then((response) => {
+                  this.loading = false;
+                  this.message = '';
+                  this.newBookmark.url = '';
+                  this.getBookmarks();
+                })
+                .catch((error) => {
+                  this.loading = false;
+                  console.log(error);
+                  this.message = 'Такая ссылка уже существует';
+                  this.newBookmark.url = '';
+                })
+            }
           },
           updateBookmark: function() {
             this.loading = true;
