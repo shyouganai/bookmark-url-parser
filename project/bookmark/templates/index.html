@@ -93,7 +93,8 @@
           message: null
         },
         mounted: function() {
-          this.getBookmarks();
+            this.getBookmarks();
+            this.interval = setInterval(() => this.getBookmarks(), 10000);
         },
         methods: {
           getBookmarks: function() {
